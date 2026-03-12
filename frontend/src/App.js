@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RequesterDashboard from "./pages/RequesterDashboard";
 import HelperDashboard from "./pages/HelperDashboard";
+import CreateEmergency from "./pages/CreateEmergency";
+import Requests from "./pages/Requests";
 
 function App() {
 return (
@@ -19,6 +21,10 @@ return (
 <Route path="/requester" element={<RequesterDashboard />} />
 
 <Route path="/helper" element={<HelperDashboard />} />
+
+<Route path="/create-emergency" element={<CreateEmergency />} />
+
+<Route path="/requests" element={<Requests />} />
 
 </Routes>
 

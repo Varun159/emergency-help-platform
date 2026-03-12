@@ -3,6 +3,7 @@ const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
 const { acceptEmergency } = require("../controllers/emergencyController");
+const { getMyRequests } = require("../controllers/emergencyController");
 
 const {
 createEmergency,
@@ -13,6 +14,8 @@ getNearbyHelpers
 router.post("/create", protect, createEmergency);
 
 router.get("/nearby-helpers", protect, getNearbyHelpers);
+
+router.get("/my-requests", protect, getMyRequests);
 
 router.patch("/accept/:requestId", protect, acceptEmergency);
 

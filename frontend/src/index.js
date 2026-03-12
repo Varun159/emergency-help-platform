@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -17,7 +18,7 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 
 reportWebVitals();
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+
 
 function EmergencyMap({ emergencies }) {
 

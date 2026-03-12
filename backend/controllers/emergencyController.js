@@ -90,6 +90,34 @@ res.status(500).json({ error: error.message });
 
 };
 
+
+
+/*
+GET MY REQUESTS
+*/
+
+exports.getMyRequests = async (req, res) => {
+    console.log("USER:", req.user);
+
+try {
+
+const requests = await EmergencyRequest.find({
+requester_id: req.user.id
+}).sort({ createdAt: -1 });
+
+res.json(requests);
+console.log(req.user);
+
+} catch (error) {
+
+res.status(500).json({ message: "Error fetching requests" });
+
+}
+
+};
+
+
+
 /*
 HELPER ACCEPT EMERGENCY REQUEST
 */
