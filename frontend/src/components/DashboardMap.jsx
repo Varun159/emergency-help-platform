@@ -1,5 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
+import { useEffect, useState } from "react";
+import API from "../api/axios";
 
 const bloodIcon = new L.Icon({
 iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
@@ -18,39 +20,29 @@ iconSize: [32,32]
 
 function DashboardMap(){
 
-const emergencies = [
+const [emergencies,setEmergencies] = useState([]);
 
-{
-id:1,
-category:"blood",
-title:"Blood Needed",
-description:"Urgent O+ donor required",
-urgency:"HIGH",
-lat:12.9716,
-lng:77.5946
-},
+useEffect(()=>{
 
-{
-id:2,
-category:"transport",
-title:"Transport Needed",
-description:"Patient transfer required",
-urgency:"MEDIUM",
-lat:12.975,
-lng:77.599
-},
+const loadEmergencies = async ()=>{
 
-{
-id:3,
-category:"medicine",
-title:"Medicine Required",
-description:"Pharmacy assistance needed",
-urgency:"HIGH",
-lat:12.969,
-lng:77.588
+try{
+
+const res = await API.get("/emergency/nearby");
+
+setEmergencies(res.data);
+
+}catch(err){
+
+console.log(err);
+
 }
 
-];
+};
+
+loadEmergencies();
+
+},[]);
 
 const getIcon = (category)=>{
 
@@ -76,8 +68,11 @@ url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
 
 {emergencies.map((e)=>(
 <Marker
-key={e.id}
-position={[e.lat,e.lng]}
+key={e._id}
+position={[
+e.location.coordinates[1],
+e.location.coordinates[0]
+]}
 icon={getIcon(e.category)}
 >
 
@@ -85,7 +80,7 @@ icon={getIcon(e.category)}
 
 <div style={{minWidth:"180px"}}>
 
-<h4 style={{marginBottom:"6px"}}>{e.title}</h4>
+<h4 style={{marginBottom:"6px"}}>{e.category}</h4>
 
 <p style={{fontSize:"13px",marginBottom:"6px"}}>
 {e.description}
@@ -98,7 +93,7 @@ padding:"3px 8px",
 borderRadius:"6px",
 fontSize:"11px"
 }}>
-{e.urgency}
+{e.urgency_level}
 </span>
 
 </div>

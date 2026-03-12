@@ -1,14 +1,58 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import DashboardMap from "../components/DashboardMap";
 import Sidebar from "../components/Sidebar";
+import API from "../api/axios";
 
 function RequesterDashboard(){
 
 const navigate = useNavigate();
 
 const [sidebarOpen,setSidebarOpen] = useState(false);
+
+const [stats,setStats] = useState({
+openRequests:0,
+resolvedRequests:0,
+nearbyHelpers:0
+});
+
+const [recentRequests,setRecentRequests] = useState([]);
+
+useEffect(()=>{
+
+const loadStats = async ()=>{
+
+try{
+
+const res = await API.get("/dashboard/stats");
+
+setStats(res.data);
+
+}catch(err){
+console.log(err);
+}
+
+};
+
+const loadRequests = async ()=>{
+
+try{
+
+const res = await API.get("/emergency/my-requests");
+
+setRecentRequests(res.data.slice(0,3));
+
+}catch(err){
+console.log(err);
+}
+
+};
+
+loadStats();
+loadRequests();
+
+},[]);
 
 return(
 
@@ -73,7 +117,7 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 <p style={styles.statLabel}>Open Requests</p>
 </div>
 
-<h2 style={styles.statNumber}>2</h2>
+<h2 style={styles.statNumber}>{stats.openRequests}</h2>
 <p style={styles.statMeta}>Active emergencies</p>
 
 </div>
@@ -98,7 +142,7 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 <p style={styles.statLabel}>Resolved</p>
 </div>
 
-<h2 style={styles.statNumber}>5</h2>
+<h2 style={styles.statNumber}>{stats.resolvedRequests}</h2>
 <p style={styles.statMeta}>Completed help</p>
 
 </div>
@@ -123,7 +167,7 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 <p style={styles.statLabel}>Nearby Helpers</p>
 </div>
 
-<h2 style={styles.statNumber}>12</h2>
+<h2 style={styles.statNumber}>{stats.nearbyHelpers}</h2>
 <p style={styles.statMeta}>Available nearby</p>
 
 </div>
@@ -142,49 +186,21 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 
 <h2 style={styles.sectionTitle}>Recent Requests</h2>
 
-<div style={styles.requestCard}>
+{recentRequests.map((req)=>(
+<div key={req._id} style={styles.requestCard}>
 
 <div>
-<p style={styles.requestTitle}>Blood Needed</p>
-<p style={styles.requestDesc}>Urgent donor required</p>
+<p style={styles.requestTitle}>{req.category}</p>
+<p style={styles.requestDesc}>{req.description}</p>
 </div>
 
 <div style={styles.requestRight}>
-<span style={styles.high}>HIGH</span>
-<span style={styles.open}>OPEN</span>
+<span style={styles.high}>{req.urgency_level}</span>
+<span style={styles.open}>{req.status}</span>
 </div>
 
 </div>
-
-
-<div style={styles.requestCard}>
-
-<div>
-<p style={styles.requestTitle}>Transport Needed</p>
-<p style={styles.requestDesc}>Patient transfer required</p>
-</div>
-
-<div style={styles.requestRight}>
-<span style={styles.medium}>MEDIUM</span>
-<span style={styles.resolved}>RESOLVED</span>
-</div>
-
-</div>
-
-
-<div style={styles.requestCard}>
-
-<div>
-<p style={styles.requestTitle}>Medicine Required</p>
-<p style={styles.requestDesc}>Pharmacy assistance needed</p>
-</div>
-
-<div style={styles.requestRight}>
-<span style={styles.high}>HIGH</span>
-<span style={styles.open}>OPEN</span>
-</div>
-
-</div>
+))}
 
 </div>
 
@@ -215,6 +231,7 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 );
 
 }
+
 
 const styles = {
 
