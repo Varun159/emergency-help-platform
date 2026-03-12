@@ -3,7 +3,7 @@ const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
 
-const { toggleAvailability } = require("../controllers/helperController");
+const { toggleAvailability, getNearbyHelpers } = require("../controllers/helperController");
 
 router.patch("/availability", protect, toggleAvailability);
 

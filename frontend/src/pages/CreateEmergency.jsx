@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import API from "../api/axios";
 
+import LocationPreviewMap from "../components/LocationPreviewMap";
+
 function CreateEmergency(){
 
 const navigate = useNavigate();
@@ -54,42 +56,128 @@ close={()=>setSidebarOpen(false)}
 
 <div style={styles.container}>
 
-<h2>Create Emergency Request</h2>
+<h2 style={styles.title}>Create Emergency Request</h2>
 
 <div style={styles.card}>
 
-<select
-value={category}
-onChange={(e)=>setCategory(e.target.value)}
-style={styles.input}
+{/* CATEGORY */}
+
+<p style={styles.label}>Select Category</p>
+
+<div style={styles.categoryGrid}>
+
+<div
+style={{
+...styles.categoryCard,
+...(category==="blood" && styles.categorySelected)
+}}
+onClick={()=>setCategory("blood")}
 >
+Blood
+</div>
 
-<option value="">Select Category</option>
-<option value="blood">Blood</option>
-<option value="transport">Medical Transport</option>
-<option value="medicine">Medicine</option>
-<option value="beds">Hospital Beds</option>
-<option value="oxygen">Oxygen Cylinder</option>
+<div
+style={{
+...styles.categoryCard,
+...(category==="transport" && styles.categorySelected)
+}}
+onClick={()=>setCategory("transport")}
+>
+Transport
+</div>
 
-</select>
+<div
+style={{
+...styles.categoryCard,
+...(category==="medicine" && styles.categorySelected)
+}}
+onClick={()=>setCategory("medicine")}
+>
+Medicine
+</div>
+
+<div
+style={{
+...styles.categoryCard,
+...(category==="beds" && styles.categorySelected)
+}}
+onClick={()=>setCategory("beds")}
+>
+Beds
+</div>
+
+<div
+style={{
+...styles.categoryCard,
+...(category==="oxygen" && styles.categorySelected)
+}}
+onClick={()=>setCategory("oxygen")}
+>
+Oxygen
+</div>
+
+</div>
+
+{/* DESCRIPTION */}
+
+<p style={styles.label}>Describe Emergency</p>
 
 <textarea
-placeholder="Describe the emergency"
+placeholder="Provide details about the emergency"
 onChange={(e)=>setDescription(e.target.value)}
 style={styles.textarea}
 />
 
-<select
-value={urgency}
-onChange={(e)=>setUrgency(e.target.value)}
-style={styles.input}
+{/* URGENCY */}
+
+<p style={styles.label}>Urgency Level</p>
+
+<div style={styles.urgencyRow}>
+
+<div
+style={{
+...styles.urgencyButton,
+...(urgency==="low" && styles.urgencySelected)
+}}
+onClick={()=>setUrgency("low")}
 >
+Low
+</div>
 
-<option value="low">Low</option>
-<option value="medium">Medium</option>
-<option value="high">High</option>
+<div
+style={{
+...styles.urgencyButton,
+...(urgency==="medium" && styles.urgencySelected)
+}}
+onClick={()=>setUrgency("medium")}
+>
+Medium
+</div>
 
-</select>
+<div
+style={{
+...styles.urgencyButton,
+...(urgency==="high" && styles.urgencySelected)
+}}
+onClick={()=>setUrgency("high")}
+>
+High
+</div>
+
+</div>
+
+<div style={styles.mapSection}>
+
+<h3 style={styles.mapTitle}>
+Location Preview
+</h3>
+
+<div style={styles.mapCard}>
+<LocationPreviewMap/>
+</div>
+
+</div>
+<br></br>
 
 <button style={styles.button} onClick={createEmergency}>
 Submit Emergency
@@ -104,6 +192,8 @@ Submit Emergency
 </div>
 
 </div>
+
+
 
 );
 
@@ -125,8 +215,12 @@ minHeight:"100vh"
 },
 
 container:{
-maxWidth:"500px",
+maxWidth:"600px",
 margin:"60px auto"
+},
+
+title:{
+marginBottom:"20px"
 },
 
 card:{
@@ -136,21 +230,80 @@ borderRadius:"12px",
 boxShadow:"0 8px 20px rgba(0,0,0,0.1)"
 },
 
-input:{
-width:"100%",
+label:{
+fontSize:"14px",
+fontWeight:"600",
+marginBottom:"8px",
+display:"block"
+},
+
+categoryGrid:{
+display:"grid",
+gridTemplateColumns:"repeat(3,1fr)",
+gap:"12px",
+marginBottom:"20px"
+},
+
+categoryCard:{
 padding:"12px",
-marginBottom:"14px",
-borderRadius:"8px",
-border:"1px solid #d1d5db"
+borderRadius:"10px",
+background:"#f9fafb",
+border:"1px solid #e5e7eb",
+cursor:"pointer",
+textAlign:"center",
+fontWeight:"500"
+},
+
+categorySelected:{
+background:"#6366F1",
+color:"white",
+border:"none"
 },
 
 textarea:{
 width:"100%",
 padding:"12px",
-marginBottom:"14px",
+marginBottom:"20px",
 borderRadius:"8px",
 border:"1px solid #d1d5db",
-minHeight:"80px"
+minHeight:"100px"
+},
+
+urgencyRow:{
+display:"flex",
+gap:"10px",
+marginBottom:"20px"
+},
+
+urgencyButton:{
+flex:1,
+padding:"10px",
+borderRadius:"10px",
+background:"#f3f4f6",
+textAlign:"center",
+cursor:"pointer",
+fontWeight:"500"
+},
+
+urgencySelected:{
+background:"#ef4444",
+color:"white"
+},
+
+mapSection:{
+marginTop:"40px"
+},
+
+mapTitle:{
+marginBottom:"12px",
+fontWeight:"600"
+},
+
+mapCard:{
+background:"white",
+padding:"10px",
+borderRadius:"12px",
+boxShadow:"0 8px 20px rgba(0,0,0,0.08)"
 },
 
 button:{
@@ -164,6 +317,6 @@ fontWeight:"600",
 cursor:"pointer"
 }
 
-}
+};
 
 export default CreateEmergency;

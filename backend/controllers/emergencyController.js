@@ -97,7 +97,7 @@ GET MY REQUESTS
 */
 
 exports.getMyRequests = async (req, res) => {
-    console.log("USER:", req.user);
+console.log("USER:", req.user);
 
 try {
 
@@ -151,6 +151,28 @@ emergency
 } catch (error) {
 
 res.status(500).json({ error: error.message });
+
+}
+
+};
+
+
+
+/*
+GET NEARBY EMERGENCIES
+*/
+
+exports.getNearbyEmergencies = async (req,res)=>{
+
+try{
+
+const emergencies = await EmergencyRequest.find({ status:"open" }).limit(20);
+
+res.json(emergencies);
+
+}catch(err){
+
+res.status(500).json({message:"Error loading emergencies"});
 
 }
 
