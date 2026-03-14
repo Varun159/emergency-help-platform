@@ -9,7 +9,7 @@ REGISTER USER
 exports.registerUser = async (req, res) => {
   try {
 
-    const { name, email, password, phone, role, latitude, longitude } = req.body;
+    const { name, email, password, phone, role, latitude, longitude, institution, address } = req.body;
 
     // check if user exists
     const existingUser = await User.findOne({ email });
@@ -29,6 +29,8 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       phone,
       role,
+      institution: institution || "",
+      address: address || "",
       location: {
         type: "Point",
         coordinates: [longitude, latitude]
@@ -91,4 +93,47 @@ exports.loginUser = async (req, res) => {
 
   }
 
+};
+
+
+
+/*
+GET CURRENT USER PROFILE
+*/
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+/*
+UPDATE USER PROFILE
+*/
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phone, institution, address } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (institution !== undefined) user.institution = institution;
+    if (address !== undefined) user.address = address;
+
+    await user.save();
+
+    const updatedUser = await User.findById(req.user.id).select("-password");
+    res.json({ message: "Profile updated", user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

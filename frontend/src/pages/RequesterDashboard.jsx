@@ -3,7 +3,9 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import DashboardMap from "../components/DashboardMap";
 import Sidebar from "../components/Sidebar";
+import Toast from "../components/Toast";
 import API from "../api/axios";
+import socket from "../sockets/socket";
 
 function RequesterDashboard(){
 
@@ -18,6 +20,43 @@ nearbyHelpers:0
 });
 
 const [recentRequests,setRecentRequests] = useState([]);
+const [toast,setToast] = useState(null);
+
+// Join socket room for targeted notifications
+useEffect(()=>{
+const token = localStorage.getItem("token");
+if(token){
+  try{
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    socket.emit("join", payload.id);
+  }catch(e){
+    console.log("Could not join socket room");
+  }
+}
+},[]);
+
+// Listen for request accepted notifications
+useEffect(()=>{
+socket.on("requestAccepted",(data)=>{
+  setToast({
+    message: data.message || "A helper has accepted your request!",
+    type: "accepted"
+  });
+  // Refresh data
+  const refreshData = async ()=>{
+    try{
+      const [statsRes, reqRes] = await Promise.all([
+        API.get("/dashboard/stats"),
+        API.get("/emergency/my-requests")
+      ]);
+      setStats(statsRes.data);
+      setRecentRequests(reqRes.data.slice(0,3));
+    }catch(err){ console.log(err); }
+  };
+  refreshData();
+});
+return ()=> socket.off("requestAccepted");
+},[]);
 
 useEffect(()=>{
 
@@ -57,6 +96,14 @@ loadRequests();
 return(
 
 <div style={styles.layout}>
+
+{toast && (
+<Toast
+  message={toast.message}
+  type={toast.type}
+  onClose={()=>setToast(null)}
+/>
+)}
 
 <Sidebar
 open={sidebarOpen}
@@ -189,14 +236,71 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 {recentRequests.map((req)=>(
 <div key={req._id} style={styles.requestCard}>
 
-<div>
+<div style={{flex:1}}>
 <p style={styles.requestTitle}>{req.category}</p>
 <p style={styles.requestDesc}>{req.description}</p>
+
+{/* Show helper details if request is accepted */}
+{req.accepted_by && typeof req.accepted_by === "object" && (
+<div style={{
+  display:"flex",
+  alignItems:"center",
+  gap:"10px",
+  marginTop:"10px",
+  padding:"10px 14px",
+  background:"#ecfdf5",
+  borderRadius:"10px",
+  border:"1px solid #d1fae5"
+}}>
+  <span style={{
+    width:"32px",
+    height:"32px",
+    borderRadius:"50%",
+    background:"linear-gradient(135deg,#10B981,#059669)",
+    color:"white",
+    display:"flex",
+    alignItems:"center",
+    justifyContent:"center",
+    fontWeight:"700",
+    fontSize:"13px",
+    flexShrink:0
+  }}>
+    {req.accepted_by.name?.charAt(0)?.toUpperCase() || "?"}
+  </span>
+  <div>
+    <p style={{fontWeight:"600",fontSize:"13px",color:"#111827",margin:0}}>
+      {req.accepted_by.name} <span style={{color:"#10B981",fontSize:"11px"}}>• Helper</span>
+    </p>
+    <p style={{fontSize:"12px",color:"#6b7280",margin:0}}>
+      📞 {req.accepted_by.phone}
+    </p>
+    {req.accepted_by.institution && (
+      <p style={{fontSize:"12px",color:"#6b7280",margin:0}}>
+        🏥 {req.accepted_by.institution}
+      </p>
+    )}
+    {req.accepted_by.address && (
+      <p style={{fontSize:"12px",color:"#6b7280",margin:0}}>
+        📍 {req.accepted_by.address}
+      </p>
+    )}
+  </div>
+</div>
+)}
+
 </div>
 
 <div style={styles.requestRight}>
-<span style={styles.high}>{req.urgency_level}</span>
-<span style={styles.open}>{req.status}</span>
+<span style={
+  req.urgency_level === "high" ? styles.high :
+  req.urgency_level === "medium" ? styles.medium :
+  styles.high
+}>{req.urgency_level}</span>
+<span style={
+  req.status === "resolved" ? styles.resolved :
+  req.status === "accepted" ? {...styles.open, background:"#10B981"} :
+  styles.open
+}>{req.status}</span>
 </div>
 
 </div>

@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
         type: String,
-        enum: ["requester", "helper", "admin"],
+        enum: ["requester", "helper", "both", "admin"],
         default: "requester"
     },
 
@@ -50,6 +50,16 @@ const userSchema = new mongoose.Schema(
     trust_score: {
         type: Number,
         default: 0
+    },
+
+    institution: {
+        type: String,
+        default: ""
+    },
+
+    address: {
+        type: String,
+        default: ""
     },
 
     availability_status: {

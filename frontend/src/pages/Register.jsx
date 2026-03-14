@@ -9,6 +9,8 @@ const [name,setName] = useState("");
 const [email,setEmail] = useState("");
 const [password,setPassword] = useState("");
 const [phone,setPhone] = useState("");
+const [institution,setInstitution] = useState("");
+const [address,setAddress] = useState("");
 const [role,setRole] = useState("requester");
 
 const [toast,setToast] = useState(null);
@@ -44,6 +46,8 @@ email,
 password,
 phone,
 role,
+institution,
+address,
 latitude,
 longitude
 });
@@ -157,6 +161,27 @@ onBlur={(e)=>e.target.style.border="1px solid #374151"}
 </div>
 
 
+<div style={styles.inputRow}>
+
+<input
+placeholder="Institution / Hospital Name"
+onChange={(e)=>setInstitution(e.target.value)}
+style={styles.inputHalf}
+onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
+onBlur={(e)=>e.target.style.border="1px solid #374151"}
+/>
+
+<input
+placeholder="Address"
+onChange={(e)=>setAddress(e.target.value)}
+style={styles.inputHalf}
+onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
+onBlur={(e)=>e.target.style.border="1px solid #374151"}
+/>
+
+</div>
+
+
 <div style={styles.roleSelector}>
 
 <div
@@ -167,7 +192,7 @@ border: role === "requester" ? "2px solid #8B5CF6" : "1px solid #374151"
 onClick={()=>setRole("requester")}
 >
 
-<h4>Requester</h4>
+<h4>🚨 Requester</h4>
 <p>Request emergency help</p>
 
 </div>
@@ -181,8 +206,21 @@ border: role === "helper" ? "2px solid #8B5CF6" : "1px solid #374151"
 onClick={()=>setRole("helper")}
 >
 
-<h4>Helper</h4>
+<h4>🤝 Helper</h4>
 <p>Assist nearby emergencies</p>
+
+</div>
+
+<div
+style={{
+...styles.roleCard,
+border: role === "both" ? "2px solid #8B5CF6" : "1px solid #374151"
+}}
+onClick={()=>setRole("both")}
+>
+
+<h4>⚡ Both</h4>
+<p>Help others & request help</p>
 
 </div>
 

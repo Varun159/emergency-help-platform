@@ -7,13 +7,45 @@ const location = useLocation();
 
 const isActive = (path) => location.pathname === path;
 
-const items = [
-{ label:"Dashboard", icon:"🏠", path:"/requester" },
-{ label:"Create Request", icon:"🚨", path:"/create-emergency" },
-{ label:"Requests", icon:"📋", path:"/requests" },
-{ label:"Help Others", icon:"🤝", path:"/helper" },
-{ label:"Profile", icon:"👤", path:"/profile" }
-];
+  const isHelper = location.pathname === "/helper";
+
+  // Check if user has "both" role from token
+  let userRole = "";
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      userRole = payload.role || "";
+    }
+  } catch {}
+
+  const requesterItems = [
+    { label:"Dashboard", icon:"🏠", path:"/requester" },
+    { label:"Create Request", icon:"🚨", path:"/create-emergency" },
+    { label:"Requests", icon:"📋", path:"/requests" },
+    { label:"Help Others", icon:"🤝", path:"/helper" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const helperItems = [
+    { label:"Dashboard", icon:"🏠", path:"/helper" },
+    { label:"Nearby Emergencies", icon:"🚨", path:"/helper" },
+    { label:"Accepted Requests", icon:"✅", path:"/helper" },
+    { label:"Emergency Map", icon:"🗺️", path:"/helper" },
+    { label:"My Activity", icon:"📊", path:"/helper" },
+    { label:"Requester View", icon:"↩️", path:"/requester" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const bothItems = [
+    { label:"Requester Dashboard", icon:"🏠", path:"/requester" },
+    { label:"Helper Dashboard", icon:"🤝", path:"/helper" },
+    { label:"Create Request", icon:"🚨", path:"/create-emergency" },
+    { label:"Requests", icon:"📋", path:"/requests" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const items = userRole === "both" ? bothItems : (isHelper ? helperItems : requesterItems);
 
 return(
 
