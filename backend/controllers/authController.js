@@ -7,22 +7,25 @@ REGISTER USER
 */
 
 exports.registerUser = async (req, res) => {
-  console.log("Registration request received:", req.body);
+  console.log("Registration request received for:", req.body.email);
   try {
-
     const { name, email, password, phone, role, latitude, longitude, institution, address } = req.body;
 
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
+    // Robust coordinate parsing with defaults for safety if geolocation fails
+    let lat = parseFloat(latitude);
+    let lng = parseFloat(longitude);
 
     if (isNaN(lat) || isNaN(lng)) {
-      return res.status(400).json({ message: "Invalid location coordinates" });
+      console.warn("Invalid coordinates received, defaulting to 0,0");
+      lat = 0;
+      lng = 0;
     }
 
     // check if user exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
+      console.log("Registration failed: User already exists", email);
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -45,15 +48,15 @@ exports.registerUser = async (req, res) => {
       }
     });
 
+    console.log("User registered successfully:", email);
     res.status(201).json({
       message: "User registered successfully",
-      user
+      user: { id: user._id, name: user.name, email: user.email, role: user.role } // exclude password from response
     });
 
   } catch (error) {
-
+    console.error("CRITICAL REGISTRATION ERROR:", error);
     res.status(500).json({ message: error.message || "Registration failed" });
-
   }
 };
 
@@ -63,7 +66,7 @@ LOGIN USER
 */
 
 exports.loginUser = async (req, res) => {
-
+  console.log("Login attempt for email:", req.body.email);
   try {
 
     const { email, password } = req.body;
@@ -71,6 +74,7 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log("Login failed: User not found");
       return res.status(400).json({ message: "User not found" });
     }
 
