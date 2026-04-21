@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 import Toast from "../components/Toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register(){
 
@@ -12,6 +13,7 @@ const [phone,setPhone] = useState("");
 const [institution,setInstitution] = useState("");
 const [address,setAddress] = useState("");
 const [role,setRole] = useState("requester");
+const [showPassword, setShowPassword] = useState(false);
 
 const [toast,setToast] = useState(null);
 
@@ -29,41 +31,55 @@ setToast(null);
 
 };
 
-const handleRegister = async (e)=>{
+const handleRegister = async (e) => {
+    e.preventDefault();
 
-e.preventDefault();
+    if (!name || !email || !password || !phone) {
+        showToast("Please fill in all required fields", "error");
+        return;
+    }
 
-navigator.geolocation.getCurrentPosition(async (position)=>{
+    if (!navigator.geolocation) {
+        showToast("Geolocation is not supported by your browser", "error");
+        return;
+    }
 
-const latitude = position.coords.latitude;
-const longitude = position.coords.longitude;
+    showToast("Detecting location...", "info");
 
-try{
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-await API.post("/auth/register",{
-name,
-email,
-password,
-phone,
-role,
-institution,
-address,
-latitude,
-longitude
-});
+            try {
+                await API.post("/auth/register", {
+                    name,
+                    email,
+                    password,
+                    phone,
+                    role,
+                    institution,
+                    address,
+                    latitude,
+                    longitude
+                });
 
-showToast("Registration successful!","success");
+                showToast("Registration successful!", "success");
 
-setTimeout(()=>{
-navigate("/");
-},1200);
+                setTimeout(() => {
+                    navigate("/");
+                }, 1200);
 
-}catch(err){
-showToast("Registration failed","error");
-}
-
-});
-
+            } catch (err) {
+                const errorMsg = err.response?.data?.message || "Registration failed";
+                showToast(errorMsg, "error");
+            }
+        },
+        (error) => {
+            console.error("Geolocation error:", error);
+            showToast("Failed to get location. Please enable location permissions.", "error");
+        }
+    );
 };
 
 return(
@@ -122,6 +138,7 @@ Join the emergency support network
 
 <input
 placeholder="Full Name"
+value={name}
 onChange={(e)=>setName(e.target.value)}
 style={styles.inputHalf}
 onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
@@ -130,6 +147,7 @@ onBlur={(e)=>e.target.style.border="1px solid #374151"}
 
 <input
 placeholder="Email"
+value={email}
 onChange={(e)=>setEmail(e.target.value)}
 style={styles.inputHalf}
 onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
@@ -141,17 +159,27 @@ onBlur={(e)=>e.target.style.border="1px solid #374151"}
 
 <div style={styles.inputRow}>
 
-<input
-type="password"
-placeholder="Password"
-onChange={(e)=>setPassword(e.target.value)}
-style={styles.inputHalf}
-onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
-onBlur={(e)=>e.target.style.border="1px solid #374151"}
-/>
+<div style={{ position: "relative", flex: 1 }}>
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    value={password}
+    onChange={(e)=>setPassword(e.target.value)}
+    style={styles.inputHalf}
+    onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
+    onBlur={(e)=>e.target.style.border="1px solid #374151"}
+  />
+  <span 
+    style={styles.eyeIcon} 
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</div>
 
 <input
 placeholder="Phone Number"
+value={phone}
 onChange={(e)=>setPhone(e.target.value)}
 style={styles.inputHalf}
 onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
@@ -165,6 +193,7 @@ onBlur={(e)=>e.target.style.border="1px solid #374151"}
 
 <input
 placeholder="Institution / Hospital Name"
+value={institution}
 onChange={(e)=>setInstitution(e.target.value)}
 style={styles.inputHalf}
 onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
@@ -173,6 +202,7 @@ onBlur={(e)=>e.target.style.border="1px solid #374151"}
 
 <input
 placeholder="Address"
+value={address}
 onChange={(e)=>setAddress(e.target.value)}
 style={styles.inputHalf}
 onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
@@ -252,7 +282,7 @@ const styles = {
 
 container:{
 minHeight:"100vh",
-background:"linear-gradient(135deg,#0f172a,#1e1b4b)",
+background:"linear-gradient(135deg, #0f172a, #111827)",
 color:"white",
 display:"flex",
 flexDirection:"column",
@@ -289,9 +319,10 @@ card:{
 width:"520px",
 padding:"28px",
 borderRadius:"14px",
-background:"#241f55ff",
+background:"#1e293b",
 boxShadow:"0 10px 40px rgba(0,0,0,0.5)",
-transition:"all 0.3s ease"
+transition:"all 0.3s ease",
+border: "1px solid rgba(255, 255, 255, 0.05)"
 },
 
 registerTitle:{
@@ -324,12 +355,24 @@ marginBottom:"12px"
 inputHalf:{
 flex:1,
 padding:"10px",
+paddingRight: "35px", // space for eye icon
 borderRadius:"8px",
 border:"1px solid #374151",
 background:"#1f2937",
 color:"white",
 outline:"none",
-transition:"all 0.2s"
+transition:"all 0.2s",
+boxSizing: "border-box"
+},
+
+eyeIcon: {
+position: "absolute",
+right: "10px",
+top: "10px",
+cursor: "pointer",
+color: "#9ca3af",
+fontSize: "16px",
+zIndex: 10
 },
 
 roleSelector:{

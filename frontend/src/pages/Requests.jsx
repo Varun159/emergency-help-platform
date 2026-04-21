@@ -359,7 +359,7 @@ const styles = {
   content: {
     width: "100%",
     minHeight: "100vh",
-    background: "#f8fafc",
+    background: "#0f172a",
   },
 
   container: {
@@ -382,13 +382,13 @@ const styles = {
   pageTitle: {
     fontSize: "28px",
     fontWeight: "800",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
   pageSubtitle: {
     fontSize: "15px",
-    color: "#6b7280",
+    color: "#94a3b8",
     margin: "4px 0 0",
   },
 
@@ -415,15 +415,16 @@ const styles = {
   },
 
   statCard: {
-    background: "white",
+    background: "#1e293b",
     borderRadius: "14px",
     padding: "20px",
     display: "flex",
     alignItems: "center",
     gap: "16px",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
     transition: "all 0.25s ease",
     cursor: "default",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   statIconBg: {
@@ -444,7 +445,7 @@ const styles = {
 
   statLabel: {
     fontSize: "13px",
-    color: "#6b7280",
+    color: "#94a3b8",
     margin: "3px 0 0",
   },
 
@@ -454,10 +455,11 @@ const styles = {
     display: "flex",
     gap: "8px",
     marginBottom: "24px",
-    background: "white",
+    background: "#1e293b",
     padding: "6px",
     borderRadius: "14px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   filterTab: {
@@ -488,6 +490,8 @@ const styles = {
     borderRadius: "8px",
     fontSize: "12px",
     fontWeight: "700",
+    background: "rgba(255, 255, 255, 0.1)",
+    color: "#94a3b8"
   },
 
   // ── LOADING / EMPTY ─────────────────
@@ -512,9 +516,10 @@ const styles = {
   emptyState: {
     textAlign: "center",
     padding: "60px 30px",
-    background: "white",
+    background: "#1e293b",
     borderRadius: "16px",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   // ── CARDS ───────────────────────────
@@ -526,12 +531,13 @@ const styles = {
   },
 
   card: {
-    background: "white",
+    background: "#1e293b",
     padding: "24px",
     borderRadius: "16px",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
     transition: "all 0.25s ease",
     cursor: "default",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   cardTop: {
@@ -564,7 +570,7 @@ const styles = {
   cardTitle: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
     textTransform: "capitalize",
   },
@@ -589,7 +595,7 @@ const styles = {
   },
 
   cardDesc: {
-    color: "#4b5563",
+    color: "#cbd5e1",
     fontSize: "14px",
     lineHeight: "1.6",
     margin: "0 0 16px",
@@ -602,9 +608,9 @@ const styles = {
     alignItems: "flex-start",
     gap: "12px",
     padding: "14px 16px",
-    background: "#ecfdf5",
+    background: "#262f45",
     borderRadius: "12px",
-    border: "1px solid #d1fae5",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
     marginBottom: "14px",
   },
 
@@ -625,7 +631,7 @@ const styles = {
   helperName: {
     fontWeight: "600",
     fontSize: "14px",
-    color: "#111827",
+    color: "#f8fafc",
     margin: "0 0 4px",
   },
 
@@ -657,11 +663,11 @@ const styles = {
 
   metaChip: {
     fontSize: "12px",
-    color: "#9ca3af",
-    background: "#f9fafb",
+    color: "#94a3b8",
+    background: "#262f45",
     padding: "4px 10px",
     borderRadius: "8px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
   },
 };
 

@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 import Toast from "../components/Toast";    
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
 
 const [email,setEmail] = useState("");
 const [password,setPassword] = useState("");
+const [showPassword, setShowPassword] = useState(false);
 
 const navigate = useNavigate();
 
@@ -101,15 +103,23 @@ onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
 onBlur={(e)=>e.target.style.border="1px solid #374151"}
 />
 
-<input
-type="password"
-placeholder="Password"
-value={password}
-onChange={(e)=>setPassword(e.target.value)}
-style={styles.input}
-onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
-onBlur={(e)=>e.target.style.border="1px solid #374151"}
-/>
+<div style={{ position: "relative", width: "100%" }}>
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    value={password}
+    onChange={(e)=>setPassword(e.target.value)}
+    style={styles.input}
+    onFocus={(e)=>e.target.style.border="1px solid #8B5CF6"}
+    onBlur={(e)=>e.target.style.border="1px solid #374151"}
+  />
+  <span 
+    style={styles.eyeIcon} 
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</div>
 
 <button
 style={styles.button}
@@ -140,7 +150,7 @@ const styles = {
 container:{
 display:"flex",
 height:"100vh",
-background:"linear-gradient(135deg,#0f172a,#1e1b4b)",
+background:"linear-gradient(135deg, #0f172a, #111827)",
 color:"white"
 },
 
@@ -181,9 +191,10 @@ card:{
 width:"360px",
 padding:"40px",
 borderRadius:"14px",
-background:"#241f55ff",
-boxShadow:"0 10px 40px rgba(0,0,0,0.5)",
-transition:"all 0.3s ease"
+background:"#1e293b",
+boxShadow:"0 20px 40px rgba(0,0,0,0.4)",
+transition:"all 0.3s ease",
+border: "1px solid rgba(255, 255, 255, 0.05)"
 },
 
 loginTitle:{
@@ -192,15 +203,27 @@ fontWeight:"600"
 },
 
 input:{
-width:"90%",
+width:"100%", // Changed from 90% to 100% since it's inside a relative container
 padding:"12px",
+paddingRight: "40px", // space for eye icon
 marginBottom:"15px",
 borderRadius:"8px",
 border:"1px solid #374151",
 background:"#1f2937",
 color:"white",
 outline:"none",
-transition:"all 0.2s"
+transition:"all 0.2s",
+boxSizing: "border-box"
+},
+
+eyeIcon: {
+position: "absolute",
+right: "12px",
+top: "14px",
+cursor: "pointer",
+color: "#9ca3af",
+fontSize: "18px",
+zIndex: 10
 },
 
 button:{

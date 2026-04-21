@@ -331,7 +331,7 @@ const styles = {
   content: {
     width: "100%",
     minHeight: "100vh",
-    background: "#f8fafc",
+    background: "#0f172a",
   },
 
   container: {
@@ -388,6 +388,7 @@ const styles = {
   profileName: {
     fontSize: "26px",
     fontWeight: "700",
+    color: "#f8fafc",
     marginBottom: "4px",
   },
 
@@ -408,11 +409,12 @@ const styles = {
   // ── CARDS ───────────────────────────────
 
   card: {
-    background: "white",
+    background: "#1e293b",
     borderRadius: "16px",
     padding: "28px",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
     marginBottom: "22px",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   cardHeader: {
@@ -427,7 +429,7 @@ const styles = {
   cardTitle: {
     fontSize: "18px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
@@ -460,8 +462,8 @@ const styles = {
 
   cancelBtn: {
     background: "transparent",
-    color: "#6b7280",
-    border: "1px solid #e5e7eb",
+    color: "#94a3b8",
+    border: "1px solid #334155",
     padding: "8px 20px",
     borderRadius: "10px",
     fontWeight: "600",
@@ -486,7 +488,7 @@ const styles = {
   fieldLabel: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#9ca3af",
+    color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
@@ -494,19 +496,19 @@ const styles = {
   fieldValue: {
     fontSize: "15px",
     fontWeight: "500",
-    color: "#111827",
+    color: "#cbd5e1",
     margin: 0,
   },
 
   fieldInput: {
     padding: "10px 14px",
     borderRadius: "10px",
-    border: "1.5px solid #e5e7eb",
+    border: "1.5px solid #334155",
     fontSize: "14px",
-    color: "#111827",
+    color: "#f8fafc",
     outline: "none",
     transition: "border-color 0.2s ease",
-    background: "#f9fafb",
+    background: "#262f45",
   },
 
   fieldHint: {
@@ -530,9 +532,9 @@ const styles = {
     alignItems: "center",
     gap: "14px",
     padding: "16px 20px",
-    background: "#f8fafc",
+    background: "#262f45",
     borderRadius: "12px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
     minWidth: "180px",
   },
 
@@ -543,7 +545,7 @@ const styles = {
   statValue: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
@@ -556,11 +558,11 @@ const styles = {
   // ── DANGER ZONE ─────────────────────────
 
   dangerCard: {
-    background: "white",
+    background: "#1e293b",
     borderRadius: "16px",
     padding: "28px",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-    border: "1px solid #FEE2E2",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
+    border: "1px solid rgba(239, 68, 68, 0.2)",
   },
 
   logoutBtn: {

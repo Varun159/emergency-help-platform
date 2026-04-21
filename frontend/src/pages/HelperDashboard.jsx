@@ -399,12 +399,20 @@ function HelperDashboard() {
                             {e.requester_id.institution && (
                               <p style={styles.userPhone}>🏥 {e.requester_id.institution}</p>
                             )}
-                            {e.requester_id.address && (
-                              <p style={styles.userPhone}>📍 {e.requester_id.address}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                             {e.requester_id.address && (
+                               <p style={styles.userPhone}>📍 {e.requester_id.address}</p>
+                             )}
+                             <div style={{display:"flex", gap:"8px", marginTop:"4px", alignItems:"center"}}>
+                               <span style={{fontSize:"10px", background:"#dcfce7", color:"#166534", padding:"1px 6px", borderRadius:"10px", fontWeight:"600"}}>
+                                 ⭐ {e.requester_id.trust_score || 0}
+                               </span>
+                               <span style={{fontSize:"10px", background:"#f1f5f9", color:"#475569", padding:"1px 6px", borderRadius:"10px", fontWeight:"600"}}>
+                                 📅 {e.requester_id.createdAt ? new Date(e.requester_id.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'N/A'}
+                               </span>
+                             </div>
+                           </div>
+                         </div>
+                       )}
                     </div>
                   </div>
 
@@ -482,6 +490,14 @@ function HelperDashboard() {
                             {e.requester_id.address && (
                               <p style={styles.userPhone}>📍 {e.requester_id.address}</p>
                             )}
+                            <div style={{display:"flex", gap:"8px", marginTop:"4px", alignItems:"center"}}>
+                              <span style={{fontSize:"10px", background:"#dcfce7", color:"#166534", padding:"1px 6px", borderRadius:"10px", fontWeight:"600"}}>
+                                ⭐ {e.requester_id.trust_score || 0}
+                              </span>
+                              <span style={{fontSize:"10px", background:"#f1f5f9", color:"#475569", padding:"1px 6px", borderRadius:"10px", fontWeight:"600"}}>
+                                📅 {e.requester_id.createdAt ? new Date(e.requester_id.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'N/A'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -722,7 +738,7 @@ const styles = {
   content: {
     width: "100%",
     minHeight: "100vh",
-    background: "#f8fafc",
+    background: "#0f172a",
   },
 
   container: {
@@ -788,12 +804,13 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    background: "white",
+    background: "#1e293b",
     padding: "12px 20px",
     borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     marginBottom: "25px",
     fontSize: 14,
+    color: "#f8fafc",
   },
 
   helpersDot: {
@@ -844,7 +861,7 @@ const styles = {
   statNumber: {
     fontSize: "34px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
@@ -856,7 +873,7 @@ const styles = {
 
   divider: {
     height: "1px",
-    background: "#e5e7eb",
+    background: "rgba(255, 255, 255, 0.1)",
     margin: "10px 0 25px",
   },
 
@@ -898,7 +915,7 @@ const styles = {
   cardTitle: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
     textTransform: "capitalize",
   },
@@ -938,18 +955,19 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "60px 20px",
-    background: "white",
+    background: "#1e293b",
     borderRadius: "16px",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+    color: "#cbd5e1"
   },
 
   // ── MAP ─────────────────────────────────
 
   mapPanel: {
-    background: "white",
+    background: "#1e293b",
     padding: "24px",
     borderRadius: "18px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
   },
 
   mapHeader: {
@@ -966,8 +984,8 @@ const styles = {
   },
 
   liveBadge: {
-    background: "#FEE2E2",
-    color: "#EF4444",
+    background: "rgba(239, 68, 68, 0.2)",
+    color: "#f87171",
     padding: "5px 14px",
     borderRadius: "20px",
     fontSize: "12px",
@@ -1021,7 +1039,7 @@ const styles = {
   activityNumber: {
     fontSize: "30px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
@@ -1048,9 +1066,9 @@ const styles = {
     gap: "10px",
     marginTop: "12px",
     padding: "10px 14px",
-    background: "#f8fafc",
+    background: "#1e293b",
     borderRadius: "10px",
-    border: "1px solid #e5e7eb",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
   },
 
   userAvatar: {
@@ -1070,7 +1088,7 @@ const styles = {
   userName: {
     fontWeight: "600",
     fontSize: "14px",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 

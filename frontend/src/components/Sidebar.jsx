@@ -97,16 +97,17 @@ style={{
 const styles = {
 
 sidebar:{
-position:"fixed",
-top:"0",
-left:"0",
-width:"240px",
-height:"100%",
-background:"#111827",
-color:"white",
-padding:"30px 20px",
-transition:"transform 0.3s ease",
-zIndex:"1000"
+  position:"fixed",
+  top:"0",
+  left:"0",
+  width:"240px",
+  height:"100%",
+  background:"#030712",
+  color:"white",
+  padding:"30px 20px",
+  transition:"transform 0.3s ease",
+  zIndex:"1000",
+  borderRight: "1px solid rgba(255, 255, 255, 0.05)"
 },
 
 title:{
@@ -132,8 +133,9 @@ fontWeight:"500"
 },
 
 active:{
-background:"#1f2937",
-color:"white"
+  background:"#1e293b",
+  color: "#8B5CF6",
+  fontWeight: "700"
 },
 
 activeIndicator:{

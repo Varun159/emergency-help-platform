@@ -46,7 +46,7 @@ try {
 const helpers = await User.find({
 role: "helper",
 availability_status: true
-}).select("name location trust_score");
+}).select("name location trust_score availability_status createdAt");
 
 res.json(helpers);
 

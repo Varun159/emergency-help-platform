@@ -7,9 +7,17 @@ REGISTER USER
 */
 
 exports.registerUser = async (req, res) => {
+  console.log("Registration request received:", req.body);
   try {
 
     const { name, email, password, phone, role, latitude, longitude, institution, address } = req.body;
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ message: "Invalid location coordinates" });
+    }
 
     // check if user exists
     const existingUser = await User.findOne({ email });
@@ -33,7 +41,7 @@ exports.registerUser = async (req, res) => {
       address: address || "",
       location: {
         type: "Point",
-        coordinates: [longitude, latitude]
+        coordinates: [lng, lat]
       }
     });
 
@@ -44,7 +52,7 @@ exports.registerUser = async (req, res) => {
 
   } catch (error) {
 
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message || "Registration failed" });
 
   }
 };
@@ -89,7 +97,7 @@ exports.loginUser = async (req, res) => {
 
   } catch (error) {
 
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message || "Login failed" });
 
   }
 
@@ -107,7 +115,7 @@ exports.getProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -134,6 +142,6 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = await User.findById(req.user.id).select("-password");
     res.json({ message: "Profile updated", user: updatedUser });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message || "Failed to update profile" });
   }
 };

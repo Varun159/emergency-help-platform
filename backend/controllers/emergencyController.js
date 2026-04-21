@@ -28,7 +28,7 @@ coordinates: [longitude, latitude]
 });
 
 // Get requester details for notification
-const requester = await User.findById(req.user.id).select("name phone location institution address");
+const requester = await User.findById(req.user.id).select("name phone location institution address trust_score availability_status createdAt");
 
 const io = getIO();
 
@@ -114,7 +114,7 @@ try {
 
 const requests = await EmergencyRequest.find({
 requester_id: req.user.id
-}).populate("accepted_by", "name phone location institution address").sort({ createdAt: -1 });
+}).populate("accepted_by", "name phone location institution address trust_score availability_status createdAt").sort({ createdAt: -1 });
 
 res.json(requests);
 
@@ -154,7 +154,7 @@ emergency.status = "accepted";
 await emergency.save();
 
 // Get full helper details for notification
-const helper = await User.findById(req.user.id).select("name phone location institution address");
+const helper = await User.findById(req.user.id).select("name phone location institution address trust_score availability_status createdAt");
 
 // Save notification to DB
 const Notification = require("../models/Notification");
@@ -175,7 +175,10 @@ io.to(emergency.requester_id.toString()).emit("requestAccepted", {
     phone: helper.phone,
     location: helper.location,
     institution: helper.institution,
-    address: helper.address
+    address: helper.address,
+    trust_score: helper.trust_score,
+    availability_status: helper.availability_status,
+    createdAt: helper.createdAt
   }
 });
 
@@ -202,7 +205,7 @@ exports.getNearbyEmergencies = async (req,res)=>{
 
 try{
 
-const emergencies = await EmergencyRequest.find({ status:"open" }).populate("requester_id", "name phone location institution address").sort({ createdAt: -1 }).limit(20);
+const emergencies = await EmergencyRequest.find({ status:"open" }).populate("requester_id", "name phone location institution address trust_score availability_status createdAt").sort({ createdAt: -1 }).limit(20);
 
 res.json(emergencies);
 
@@ -227,7 +230,7 @@ try {
 const emergencies = await EmergencyRequest.find({
   accepted_by: req.user.id,
   status: "accepted"
-}).populate("requester_id", "name phone location institution address").sort({ createdAt: -1 });
+}).populate("requester_id", "name phone location institution address trust_score availability_status createdAt").sort({ createdAt: -1 });
 
 res.json(emergencies);
 

@@ -134,7 +134,7 @@ function CreateEmergency() {
                       }}
                       onMouseLeave={(e) => {
                         if (category !== c.key) {
-                          e.currentTarget.style.borderColor = "#e5e7eb";
+                          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
                           e.currentTarget.style.transform = "translateY(0)";
                         }
                       }}
@@ -172,7 +172,7 @@ function CreateEmergency() {
                     e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "#e5e7eb";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.1)";
                     e.target.style.boxShadow = "none";
                   }}
                 />
@@ -292,10 +292,11 @@ const styles = {
   content: {
     width: "100%",
     minHeight: "100vh",
+    background: "#0f172a"
   },
 
   page: {
-    background: "#f8fafc",
+    background: "#0f172a",
     minHeight: "calc(100vh - 65px)",
     padding: "36px 20px 60px",
   },
@@ -329,23 +330,24 @@ const styles = {
   title: {
     fontSize: "26px",
     fontWeight: "800",
-    color: "#111827",
+    color: "#f8fafc",
     margin: 0,
   },
 
   subtitle: {
     fontSize: "15px",
-    color: "#6b7280",
+    color: "#94a3b8",
     margin: "3px 0 0",
   },
 
   // ── CARD ────────────────────────────
 
   card: {
-    background: "white",
+    background: "#1e293b",
     padding: "32px",
     borderRadius: "20px",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+    border: "1px solid rgba(255, 255, 255, 0.05)"
   },
 
   // ── SECTIONS ────────────────────────
@@ -377,7 +379,7 @@ const styles = {
   stepLabel: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
   },
 
   // ── CATEGORY GRID ───────────────────
@@ -391,8 +393,8 @@ const styles = {
   categoryCard: {
     padding: "16px 10px",
     borderRadius: "14px",
-    background: "#f9fafb",
-    border: "2px solid #e5e7eb",
+    background: "#262f45",
+    border: "2px solid rgba(255, 255, 255, 0.05)",
     cursor: "pointer",
     textAlign: "center",
     transition: "all 0.25s ease",
@@ -400,6 +402,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     gap: "6px",
+    color: "#f8fafc"
   },
 
   categorySelected: {
@@ -430,16 +433,16 @@ const styles = {
     width: "100%",
     padding: "14px 16px",
     borderRadius: "14px",
-    border: "2px solid #e5e7eb",
+    border: "2px solid rgba(255, 255, 255, 0.05)",
     minHeight: "110px",
     fontSize: "14px",
-    color: "#111827",
+    color: "#f8fafc",
     resize: "vertical",
     outline: "none",
     transition: "all 0.25s ease",
     fontFamily: "inherit",
     boxSizing: "border-box",
-    background: "#fafafa",
+    background: "#262f45",
   },
 
   charCount: {
@@ -483,12 +486,12 @@ const styles = {
   mapWrapper: {
     borderRadius: "14px",
     overflow: "hidden",
-    border: "2px solid #e5e7eb",
+    border: "2px solid rgba(255, 255, 255, 0.1)",
   },
 
   locationHint: {
     fontSize: "13px",
-    color: "#6b7280",
+    color: "#94a3b8",
     margin: "10px 0 0",
     textAlign: "center",
   },
