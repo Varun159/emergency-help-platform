@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 const authRoutes = require("./routes/authRoutes");
 const emergencyRoutes = require("./routes/emergencyRoutes");
@@ -25,6 +26,15 @@ app.use("/api/emergency", emergencyRoutes);
 app.use("/api/helper", helperRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
+app.get("/api/health", (req, res) => {
+  const dbStatus = ["Disconnected", "Connected", "Connecting", "Disconnecting"];
+  res.json({
+    status: "Alive",
+    database: dbStatus[mongoose.connection.readyState],
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.get("/", (req, res) => {
   res.send("Emergency Help API Running");
