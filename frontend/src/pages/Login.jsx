@@ -53,7 +53,6 @@ showToast("Invalid login credentials","error");
 
 };
 
-{toast && <Toast message={toast.message} type={toast.type} />}
 
 return (
 
