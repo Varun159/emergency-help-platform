@@ -87,8 +87,10 @@ return(
 </div>
 
 <MapContainer
+key={position.toString()}
 center={position}
 zoom={14}
+zoomAnimation={false}
 style={{height:"300px",width:"100%",borderRadius:"10px"}}
 >
 
@@ -99,6 +101,7 @@ url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
 <Marker position={position} icon={markerIcon}/>
 
 {helpers.map((h)=>(
+h.location?.coordinates && (
 <Marker
 key={h._id}
 position={[
@@ -108,6 +111,7 @@ h.location.coordinates[0]
 icon={helperIcon}
 >
 </Marker>
+)
 ))}
 
 </MapContainer>

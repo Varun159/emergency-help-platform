@@ -1,32 +1,63 @@
-function Toast({ message, type }) {
+import { useEffect, useState } from "react";
 
-const background =
-type === "error"
-? "#ef4444"
-: "#8B5CF6";
+function Toast({ message, type, onClose }) {
 
-return (
+  const [visible, setVisible] = useState(true);
 
-<div style={{
-position:"fixed",
-top:"30px",
-right:"30px",
-background,
-color:"white",
-padding:"14px 24px",
-borderRadius:"10px",
-boxShadow:"0 10px 25px rgba(0,0,0,0.4)",
-fontSize:"14px",
-zIndex:9999,
-animation:"slideIn 0.3s ease"
-}}>
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(false);
+      if (onClose) setTimeout(onClose, 300);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
-{message}
+  const getStyle = () => {
+    const base = {
+      position: "fixed",
+      top: "28px",
+      right: "28px",
+      padding: "16px 24px",
+      borderRadius: "14px",
+      boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+      fontSize: "14px",
+      fontWeight: "600",
+      zIndex: 9999,
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      maxWidth: "400px",
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateX(0)" : "translateX(30px)",
+      transition: "all 0.3s ease",
+      cursor: "pointer"
+    };
 
-</div>
+    if (type === "emergency") {
+      return { ...base, background: "linear-gradient(135deg, #EF4444, #DC2626)", color: "white" };
+    }
+    if (type === "accepted") {
+      return { ...base, background: "linear-gradient(135deg, #10B981, #059669)", color: "white" };
+    }
+    if (type === "error") {
+      return { ...base, background: "#EF4444", color: "white" };
+    }
+    return { ...base, background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "white" };
+  };
 
-);
+  const getIcon = () => {
+    if (type === "emergency") return "🚨";
+    if (type === "accepted") return "✅";
+    if (type === "error") return "❌";
+    return "🔔";
+  };
 
+  return (
+    <div style={getStyle()} onClick={onClose}>
+      <span style={{ fontSize: "20px" }}>{getIcon()}</span>
+      <span>{message}</span>
+    </div>
+  );
 }
 
 export default Toast;

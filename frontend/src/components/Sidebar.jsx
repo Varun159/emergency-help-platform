@@ -7,13 +7,45 @@ const location = useLocation();
 
 const isActive = (path) => location.pathname === path;
 
-const items = [
-{ label:"Dashboard", icon:"🏠", path:"/requester" },
-{ label:"Create Request", icon:"🚨", path:"/create-emergency" },
-{ label:"Requests", icon:"📋", path:"/requests" },
-{ label:"Help Others", icon:"🤝", path:"/helper" },
-{ label:"Profile", icon:"👤", path:"/profile" }
-];
+  const isHelper = location.pathname === "/helper";
+
+  // Check if user has "both" role from token
+  let userRole = "";
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      userRole = payload.role || "";
+    }
+  } catch {}
+
+  const requesterItems = [
+    { label:"Dashboard", icon:"🏠", path:"/requester" },
+    { label:"Create Request", icon:"🚨", path:"/create-emergency" },
+    { label:"Requests", icon:"📋", path:"/requests" },
+    { label:"Help Others", icon:"🤝", path:"/helper" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const helperItems = [
+    { label:"Dashboard", icon:"🏠", path:"/helper" },
+    { label:"Nearby Emergencies", icon:"🚨", path:"/helper" },
+    { label:"Accepted Requests", icon:"✅", path:"/helper" },
+    { label:"Emergency Map", icon:"🗺️", path:"/helper" },
+    { label:"My Activity", icon:"📊", path:"/helper" },
+    { label:"Requester View", icon:"↩️", path:"/requester" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const bothItems = [
+    { label:"Requester Dashboard", icon:"🏠", path:"/requester" },
+    { label:"Helper Dashboard", icon:"🤝", path:"/helper" },
+    { label:"Create Request", icon:"🚨", path:"/create-emergency" },
+    { label:"Requests", icon:"📋", path:"/requests" },
+    { label:"Profile", icon:"👤", path:"/profile" }
+  ];
+
+  const items = userRole === "both" ? bothItems : (isHelper ? helperItems : requesterItems);
 
 return(
 
@@ -65,16 +97,17 @@ style={{
 const styles = {
 
 sidebar:{
-position:"fixed",
-top:"0",
-left:"0",
-width:"240px",
-height:"100%",
-background:"#111827",
-color:"white",
-padding:"30px 20px",
-transition:"transform 0.3s ease",
-zIndex:"1000"
+  position:"fixed",
+  top:"0",
+  left:"0",
+  width:"240px",
+  height:"100%",
+  background:"#030712",
+  color:"white",
+  padding:"30px 20px",
+  transition:"transform 0.3s ease",
+  zIndex:"1000",
+  borderRight: "1px solid rgba(255, 255, 255, 0.05)"
 },
 
 title:{
@@ -100,8 +133,9 @@ fontWeight:"500"
 },
 
 active:{
-background:"#1f2937",
-color:"white"
+  background:"#1e293b",
+  color: "#8B5CF6",
+  fontWeight: "700"
 },
 
 activeIndicator:{

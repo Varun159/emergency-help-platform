@@ -3,7 +3,9 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import DashboardMap from "../components/DashboardMap";
 import Sidebar from "../components/Sidebar";
+import Toast from "../components/Toast";
 import API from "../api/axios";
+import socket from "../sockets/socket";
 
 function RequesterDashboard(){
 
@@ -18,6 +20,43 @@ nearbyHelpers:0
 });
 
 const [recentRequests,setRecentRequests] = useState([]);
+const [toast,setToast] = useState(null);
+
+// Join socket room for targeted notifications
+useEffect(()=>{
+const token = localStorage.getItem("token");
+if(token){
+  try{
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    socket.emit("join", payload.id);
+  }catch(e){
+    console.log("Could not join socket room");
+  }
+}
+},[]);
+
+// Listen for request accepted notifications
+useEffect(()=>{
+socket.on("requestAccepted",(data)=>{
+  setToast({
+    message: data.message || "A helper has accepted your request!",
+    type: "accepted"
+  });
+  // Refresh data
+  const refreshData = async ()=>{
+    try{
+      const [statsRes, reqRes] = await Promise.all([
+        API.get("/dashboard/stats"),
+        API.get("/emergency/my-requests")
+      ]);
+      setStats(statsRes.data);
+      setRecentRequests(reqRes.data.slice(0,3));
+    }catch(err){ console.log(err); }
+  };
+  refreshData();
+});
+return ()=> socket.off("requestAccepted");
+},[]);
 
 useEffect(()=>{
 
@@ -57,6 +96,14 @@ loadRequests();
 return(
 
 <div style={styles.layout}>
+
+{toast && (
+<Toast
+  message={toast.message}
+  type={toast.type}
+  onClose={()=>setToast(null)}
+/>
+)}
 
 <Sidebar
 open={sidebarOpen}
@@ -189,14 +236,82 @@ e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,0.06)";
 {recentRequests.map((req)=>(
 <div key={req._id} style={styles.requestCard}>
 
-<div>
+<div style={{flex:1}}>
 <p style={styles.requestTitle}>{req.category}</p>
 <p style={styles.requestDesc}>{req.description}</p>
+
+{/* Show helper details if request is accepted */}
+{req.accepted_by && typeof req.accepted_by === "object" && (
+<div style={{
+  display:"flex",
+  alignItems:"center",
+  gap:"10px",
+  marginTop:"10px",
+  padding:"10px 14px",
+  background:"#2d3748",
+  borderRadius:"10px",
+  border:"1px solid rgba(255, 255, 255, 0.1)"
+}}>
+  <span style={{
+    width:"32px",
+    height:"32px",
+    borderRadius:"50%",
+    background:"linear-gradient(135deg,#10B981,#059669)",
+    color:"white",
+    display:"flex",
+    alignItems:"center",
+    justifyContent:"center",
+    fontWeight:"700",
+    fontSize:"13px",
+    flexShrink:0
+  }}>
+    {req.accepted_by.name?.charAt(0)?.toUpperCase() || "?"}
+  </span>
+  <div>
+    <p style={{fontWeight:"600",fontSize:"13px",color:"#f8fafc",margin:0}}>
+      {req.accepted_by.name} <span style={{color:"#10B981",fontSize:"11px"}}>• Helper</span>
+    </p>
+    <p style={{fontSize:"12px",color:"#6b7280",margin:0}}>
+      📞 {req.accepted_by.phone}
+    </p>
+    {req.accepted_by.institution && (
+      <p style={{fontSize:"12px",color:"#6b7280",margin:0}}>
+        🏥 {req.accepted_by.institution}
+      </p>
+    )}
+    {req.accepted_by.address && (
+      <p style={{fontSize:"12px",color:"#94a3b8",margin:0}}>
+        📍 {req.accepted_by.address}
+      </p>
+    )}
+    <div style={{display:"flex", gap:"10px", marginTop:"6px", alignItems:"center"}}>
+      <span style={{fontSize:"11px", background:"#dcfce7", color:"#166534", padding:"2px 8px", borderRadius:"10px", fontWeight:"600"}}>
+        ⭐ {req.accepted_by.trust_score || 0} Trust Score
+      </span>
+      <span style={{fontSize:"11px", background:"#f1f5f9", color:"#475569", padding:"2px 8px", borderRadius:"10px", fontWeight:"600"}}>
+        📅 Since {req.accepted_by.createdAt ? new Date(req.accepted_by.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'N/A'}
+      </span>
+      {req.accepted_by.availability_status && (
+        <span style={{fontSize:"11px", color:"#10B981", fontWeight:"700"}}>● Online</span>
+      )}
+    </div>
+  </div>
+</div>
+)}
+
 </div>
 
 <div style={styles.requestRight}>
-<span style={styles.high}>{req.urgency_level}</span>
-<span style={styles.open}>{req.status}</span>
+<span style={
+  req.urgency_level === "high" ? styles.high :
+  req.urgency_level === "medium" ? styles.medium :
+  styles.high
+}>{req.urgency_level}</span>
+<span style={
+  req.status === "resolved" ? styles.resolved :
+  req.status === "accepted" ? {...styles.open, background:"#10B981"} :
+  styles.open
+}>{req.status}</span>
 </div>
 
 </div>
@@ -240,7 +355,9 @@ display:"flex"
 },
 
 content:{
-width:"100%"
+  width:"100%",
+  background:"#0f172a",
+  color: "#f8fafc"
 },
 
 container:{
@@ -280,17 +397,17 @@ cursor:"pointer"
 },
 
 sectionHeader:{
-fontSize:"18px",
-fontWeight:"600",
-color:"#111827",
-marginBottom:"18px",
-marginTop:"10px"
+  fontSize:"18px",
+  fontWeight:"600",
+  color:"#f8fafc",
+  marginBottom:"18px",
+  marginTop:"10px"
 },
 
 divider:{
-height:"1px",
-background:"#f1f5f9",
-margin:"30px 0"
+  height:"1px",
+  background:"rgba(255, 255, 255, 0.1)",
+  margin:"30px 0"
 },
 
 statBarPurple:{
@@ -325,15 +442,16 @@ marginBottom:"40px"
 },
 
 statCard:{
-background:"white",
-padding:"24px",
-borderRadius:"14px",
-boxShadow:"0 6px 18px rgba(0,0,0,0.06)",
-display:"flex",
-flexDirection:"column",
-gap:"8px",
-transition:"all 0.25s ease",
-cursor:"pointer"
+  background:"#1e293b",
+  padding:"24px",
+  borderRadius:"14px",
+  boxShadow:"0 6px 18px rgba(0,0,0,0.3)",
+  display:"flex",
+  flexDirection:"column",
+  gap:"8px",
+  transition:"all 0.25s ease",
+  cursor:"pointer",
+  border: "1px solid rgba(255, 255, 255, 0.1)"
 },
 
 statHeader:{
@@ -349,9 +467,9 @@ fontWeight:"500"
 },
 
 statNumber:{
-fontSize:"34px",
-fontWeight:"700",
-color:"#111827"
+  fontSize:"34px",
+  fontWeight:"700",
+  color:"#f8fafc"
 },
 
 statMeta:{
@@ -392,21 +510,22 @@ gap:"25px"
 },
 
 requestList:{
-background:"white",
-borderRadius:"14px",
-boxShadow:"0 8px 20px rgba(0,0,0,0.06)",
-padding:"20px"
+  background:"#1e293b",
+  borderRadius:"14px",
+  boxShadow:"0 8px 20px rgba(0,0,0,0.3)",
+  padding:"20px",
+  border: "1px solid rgba(255, 255, 255, 0.1)"
 },
 
 requestCard:{
-display:"flex",
-justifyContent:"space-between",
-alignItems:"center",
-background:"#f9fafb",
-padding:"16px",
-borderRadius:"12px",
-marginBottom:"12px",
-border:"1px solid #f1f5f9"
+  display:"flex",
+  justifyContent:"space-between",
+  alignItems:"center",
+  background:"#2d3748",
+  padding:"16px",
+  borderRadius:"12px",
+  marginBottom:"12px",
+  border:"1px solid rgba(255, 255, 255, 0.1)"
 },
 
 requestTitle:{
@@ -414,8 +533,8 @@ fontWeight:"600"
 },
 
 requestDesc:{
-fontSize:"13px",
-color:"#6b7280"
+  fontSize:"13px",
+  color:"#94a3b8"
 },
 
 requestRight:{
@@ -456,13 +575,14 @@ fontSize:"12px"
 },
 
 mapPanel:{
-background:"white",
-padding:"20px",
-borderRadius:"16px",
-boxShadow:"0 10px 30px rgba(0,0,0,0.12)",
-display:"flex",
-flexDirection:"column",
-gap:"12px"
+  background:"#1e293b",
+  padding:"20px",
+  borderRadius:"16px",
+  boxShadow:"0 10px 30px rgba(0,0,0,0.3)",
+  display:"flex",
+  flexDirection:"column",
+  gap:"12px",
+  border: "1px solid rgba(255, 255, 255, 0.1)"
 },
 
 mapHeader:{
