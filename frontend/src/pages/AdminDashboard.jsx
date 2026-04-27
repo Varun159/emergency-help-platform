@@ -16,15 +16,20 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [catFilter, setCatFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [adminProfile, setAdminProfile] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [s, u, r, rv] = await Promise.all([
+        const [s, u, r, rv, p] = await Promise.all([
           API.get("/admin/stats"), API.get("/admin/users"),
-          API.get("/admin/requests"), API.get("/admin/reviews")
+          API.get("/admin/requests"), API.get("/admin/reviews"),
+          API.get("/auth/profile")
         ]);
-        setStats(s.data); setUsers(u.data); setRequests(r.data); setReviews(rv.data);
+        setStats(s.data); setUsers(u.data); setRequests(r.data); setReviews(rv.data); setAdminProfile(p.data);
       } catch (err) {
         console.log("Admin load error:", err);
         if (err.response?.status === 403) navigate("/");
@@ -47,13 +52,39 @@ function AdminDashboard() {
 
   const stars = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
 
+  // Category list from requests
+  const categories = [...new Set(requests.map(r => r.category).filter(Boolean))];
+
+  // Filtered requests
+  const filteredRequests = requests.filter(r => {
+    const matchCat = catFilter === "all" || r.category === catFilter;
+    const matchStatus = statusFilter === "all" || r.status === statusFilter;
+    return matchCat && matchStatus;
+  });
+
+  // Get reviews for a specific user (as helper)
+  const getUserReviews = (userId) => reviews.filter(rv => rv.helper_id?._id === userId);
+
   const tabs = [
     { key: "overview", label: "📊 Overview" },
     { key: "users", label: "👥 Users" },
     { key: "requests", label: "🚨 Requests" },
     { key: "reviews", label: "⭐ Reviews" },
     { key: "map", label: "🗺️ User Map" },
+    { key: "profile", label: "👤 Profile" },
   ];
+
+  // Overview stat card click handlers
+  const statClickMap = {
+    "Total Users": () => setActiveTab("users"),
+    "Helpers": () => { setActiveTab("users"); setRoleFilter("helper"); },
+    "Requesters": () => { setActiveTab("users"); setRoleFilter("requester"); },
+    "Total Requests": () => { setActiveTab("requests"); setStatusFilter("all"); setCatFilter("all"); },
+    "Open": () => { setActiveTab("requests"); setStatusFilter("open"); },
+    "Accepted": () => { setActiveTab("requests"); setStatusFilter("accepted"); },
+    "Resolved": () => { setActiveTab("requests"); setStatusFilter("resolved"); },
+    "Reviews": () => setActiveTab("reviews"),
+  };
 
   if (!stats) return (
     <div style={S.loadWrap}><div style={S.spinner} /><p style={{ color: "#94a3b8", marginTop: 14 }}>Loading admin panel...</p>
@@ -97,7 +128,10 @@ function AdminDashboard() {
                 { label: "Resolved", val: stats.resolvedRequests, icon: "🎉", color: "#7C3AED" },
                 { label: "Reviews", val: stats.totalReviews, icon: "⭐", color: "#F59E0B" },
               ].map(s => (
-                <div key={s.label} style={S.statCard}>
+                <div key={s.label} style={{ ...S.statCard, cursor: "pointer" }}
+                  onClick={() => statClickMap[s.label]?.()}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
                   <div style={{ ...S.statIcon, background: `${s.color}20` }}><span style={{ fontSize: 22 }}>{s.icon}</span></div>
                   <div><h3 style={{ ...S.statVal, color: s.color }}>{s.val}</h3><p style={S.statLbl}>{s.label}</p></div>
                 </div>
@@ -130,7 +164,10 @@ function AdminDashboard() {
                 </tr></thead>
                 <tbody>
                   {filteredUsers.map(u => (
-                    <tr key={u._id} style={S.tr}>
+                    <tr key={u._id} style={{ ...S.tr, cursor: "pointer" }}
+                      onClick={() => setSelectedUser(u)}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(99,102,241,0.08)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                       <td style={S.td}><div style={S.nameCell}><span style={S.avatar}>{u.name?.charAt(0)?.toUpperCase()}</span>{u.name}</div></td>
                       <td style={S.td}>{u.email}</td>
                       <td style={S.td}>{u.phone}</td>
@@ -149,7 +186,19 @@ function AdminDashboard() {
         {/* ═══ REQUESTS ═══ */}
         {activeTab === "requests" && (
           <div>
-            <h2 style={S.secTitle}>All Requests ({requests.length})</h2>
+            <h2 style={S.secTitle}>All Requests ({filteredRequests.length})</h2>
+            <div style={S.filterRow}>
+              <select style={S.select} value={catFilter} onChange={e => setCatFilter(e.target.value)}>
+                <option value="all">All Categories</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select style={S.select} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="all">All Status</option>
+                <option value="open">Open</option>
+                <option value="accepted">Accepted</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </div>
             <div style={S.tableWrap}>
               <table style={S.table}>
                 <thead><tr>
@@ -158,7 +207,7 @@ function AdminDashboard() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {requests.map(r => (
+                  {filteredRequests.map(r => (
                     <tr key={r._id} style={S.tr}>
                       <td style={S.td}><strong>{r.category}</strong></td>
                       <td style={{ ...S.td, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description}</td>
@@ -222,7 +271,94 @@ function AdminDashboard() {
           </div>
         )}
 
+        {/* ═══ PROFILE ═══ */}
+        {activeTab === "profile" && adminProfile && (
+          <div>
+            <h2 style={S.secTitle}>Admin Profile</h2>
+            <div style={S.profileCard}>
+              <div style={S.profileAvatar}>{adminProfile.name?.charAt(0)?.toUpperCase()}</div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px", color: "#f8fafc" }}>{adminProfile.name}</h3>
+                <span style={{ ...S.roleBadge, background: "#7C3AED" }}>admin</span>
+              </div>
+            </div>
+            <div style={S.profileGrid}>
+              {[
+                { icon: "📧", label: "Email", val: adminProfile.email },
+                { icon: "📞", label: "Phone", val: adminProfile.phone },
+                { icon: "🏥", label: "Institution", val: adminProfile.institution || "—" },
+                { icon: "📍", label: "Address", val: adminProfile.address || "—" },
+                { icon: "⭐", label: "Trust Score", val: adminProfile.trust_score || 0 },
+                { icon: "📅", label: "Member Since", val: adminProfile.createdAt ? new Date(adminProfile.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "—" },
+              ].map(f => (
+                <div key={f.label} style={S.profileField}>
+                  <span style={{ fontSize: 18 }}>{f.icon}</span>
+                  <div><p style={{ margin: 0, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>{f.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 15, fontWeight: 600, color: "#f8fafc" }}>{f.val}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* ═══ USER DETAIL MODAL ═══ */}
+      {selectedUser && (() => {
+        const u = selectedUser;
+        const uReviews = getUserReviews(u._id);
+        return (
+          <div style={S.modalOverlay} onClick={() => setSelectedUser(null)}>
+            <div style={S.modal} onClick={e => e.stopPropagation()}>
+              <button style={S.modalClose} onClick={() => setSelectedUser(null)}>✕</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+                <div style={{ ...S.profileAvatar, width: 56, height: 56, fontSize: 22 }}>{u.name?.charAt(0)?.toUpperCase()}</div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>{u.name}</h3>
+                  <span style={{ ...S.roleBadge, background: u.role === "admin" ? "#7C3AED" : u.role === "helper" ? "#059669" : u.role === "both" ? "#F59E0B" : "#3B82F6" }}>{u.role}</span>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                {[
+                  { icon: "📧", label: "Email", val: u.email },
+                  { icon: "📞", label: "Phone", val: u.phone },
+                  { icon: "🏥", label: "Institution", val: u.institution || "—" },
+                  { icon: "📍", label: "Address", val: u.address || "—" },
+                  { icon: "⭐", label: "Trust Score", val: `${u.trust_score || 0} — ${stars(u.trust_score || 0)}` },
+                  { icon: "📅", label: "Joined", val: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "—" },
+                  { icon: u.availability_status ? "🟢" : "🔴", label: "Status", val: u.availability_status ? "Available" : "Offline" },
+                  { icon: "✅", label: "Verified", val: u.is_verified ? "Yes" : "No" },
+                ].map(f => (
+                  <div key={f.label} style={S.profileField}>
+                    <span style={{ fontSize: 16 }}>{f.icon}</span>
+                    <div><p style={{ margin: 0, fontSize: 10, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>{f.label}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 13, fontWeight: 600, color: "#f8fafc" }}>{f.val}</p></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* User's Reviews */}
+              <h4 style={{ fontSize: 15, fontWeight: 700, color: "#f8fafc", marginBottom: 10 }}>Reviews Received ({uReviews.length})</h4>
+              {uReviews.length === 0 ? (
+                <p style={{ color: "#64748b", fontSize: 13 }}>No reviews received yet.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 200, overflowY: "auto" }}>
+                  {uReviews.map(rv => (
+                    <div key={rv._id} style={{ background: "#262f45", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#f8fafc" }}>{rv.reviewer_id?.name || "Unknown"}</span>
+                        <span style={{ color: "#F59E0B", fontSize: 12 }}>{stars(rv.rating)} {rv.rating}/5</span>
+                      </div>
+                      {rv.comment && <p style={{ color: "#cbd5e1", fontSize: 12, fontStyle: "italic", margin: 0 }}>"{rv.comment}"</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -273,6 +409,17 @@ const S = {
   legendItem: { display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#94a3b8" },
   legendDot: { width: 10, height: 10, borderRadius: "50%", display: "inline-block" },
   mapWrap: { height: 500, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.05)" },
+
+  // Profile
+  profileCard: { display: "flex", alignItems: "center", gap: 20, background: "#1e293b", borderRadius: 16, padding: "28px 32px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: 24 },
+  profileAvatar: { width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#6366F1,#8B5CF6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, flexShrink: 0 },
+  profileGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 },
+  profileField: { display: "flex", alignItems: "center", gap: 12, background: "#1e293b", borderRadius: 12, padding: "16px 20px", border: "1px solid rgba(255,255,255,0.05)" },
+
+  // Modal
+  modalOverlay: { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 },
+  modal: { background: "#1e293b", borderRadius: 20, padding: "32px", width: 560, maxWidth: "92vw", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)", position: "relative" },
+  modalClose: { position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.1)", border: "none", color: "#94a3b8", fontSize: 16, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
 };
 
 export default AdminDashboard;
