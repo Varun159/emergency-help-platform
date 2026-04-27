@@ -17,6 +17,21 @@ function CreateEmergency() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedLat, setSelectedLat] = useState(null);
   const [selectedLng, setSelectedLng] = useState(null);
+  const [savedPosition, setSavedPosition] = useState(null);
+
+  // Fetch user's saved location from profile
+  useEffect(() => {
+    const fetchSavedLoc = async () => {
+      try {
+        const res = await API.get("/auth/profile");
+        const coords = res.data.location?.coordinates;
+        if (coords && coords[0] !== 0 && coords[1] !== 0) {
+          setSavedPosition([coords[1], coords[0]]); // [lat, lng]
+        }
+      } catch {}
+    };
+    fetchSavedLoc();
+  }, []);
 
   // ── CATEGORIES ──────────────────────────
 
@@ -230,7 +245,8 @@ function CreateEmergency() {
                 </div>
 
                 <div style={styles.mapWrapper}>
-                  <LocationPickerMap
+                <LocationPickerMap
+                    initialPosition={savedPosition}
                     onLocationSelect={(lat, lng) => {
                       setSelectedLat(lat);
                       setSelectedLng(lng);

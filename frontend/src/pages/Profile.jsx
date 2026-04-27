@@ -4,6 +4,9 @@ import API from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Toast from "../components/Toast";
+import LocationPickerMap from "../components/LocationPickerMap";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import L from "leaflet";
 
 function Profile() {
 
@@ -21,6 +24,13 @@ function Profile() {
     institution: "",
     address: "",
   });
+  const [locLat, setLocLat] = useState(null);
+  const [locLng, setLocLng] = useState(null);
+
+  const savedMarkerIcon = new L.Icon({
+    iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    iconSize: [32, 32]
+  });
 
   // ── LOAD PROFILE ────────────────────────
 
@@ -35,6 +45,11 @@ function Profile() {
           institution: res.data.institution || "",
           address: res.data.address || "",
         });
+        // Set saved location
+        if (res.data.location?.coordinates) {
+          setLocLng(res.data.location.coordinates[0]);
+          setLocLat(res.data.location.coordinates[1]);
+        }
       } catch {
         setToast({ message: "Error loading profile", type: "error" });
       } finally {
@@ -48,7 +63,12 @@ function Profile() {
 
   const handleSave = async () => {
     try {
-      const res = await API.patch("/auth/profile", form);
+      const payload = { ...form };
+      if (locLat && locLng) {
+        payload.latitude = locLat;
+        payload.longitude = locLng;
+      }
+      const res = await API.patch("/auth/profile", payload);
       setUser(res.data.user);
       setEditing(false);
       setToast({ message: "Profile updated successfully!", type: "accepted" });
@@ -245,6 +265,44 @@ function Profile() {
               </div>
 
             </div>
+          </div>
+
+          {/* ═══ SAVED LOCATION CARD ═══ */}
+
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>📍 Hospital / Permanent Location</h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "4px 0 16px" }}>
+              {editing
+                ? "Click on the map or drag the pin to set your permanent location"
+                : "Your saved location is shown below"}
+            </p>
+
+            {editing ? (
+              <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <LocationPickerMap
+                  onLocationSelect={(lat, lng) => { setLocLat(lat); setLocLng(lng); }}
+                />
+              </div>
+            ) : (
+              locLat && locLng && locLat !== 0 && locLng !== 0 ? (
+                <div style={{ borderRadius: 14, overflow: "hidden", height: 250, border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <MapContainer
+                    center={[locLat, locLng]}
+                    zoom={14}
+                    zoomControl={false}
+                    scrollWheelZoom={false}
+                    style={{ height: "100%", width: "100%" }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" />
+                    <Marker position={[locLat, locLng]} icon={savedMarkerIcon} />
+                  </MapContainer>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "30px 0", color: "#64748b" }}>
+                  <span style={{ fontSize: 36 }}>🗺️</span>
+                  <p style={{ marginTop: 8 }}>No location saved yet. Edit profile to set one.</p>
+                </div>
+              )
+            )}
           </div>
 
           {/* ═══ ACCOUNT STATS CARD ═══ */}

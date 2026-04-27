@@ -131,7 +131,7 @@ UPDATE USER PROFILE
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, institution, address } = req.body;
+    const { name, phone, institution, address, latitude, longitude } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -140,6 +140,18 @@ exports.updateProfile = async (req, res) => {
     if (phone) user.phone = phone;
     if (institution !== undefined) user.institution = institution;
     if (address !== undefined) user.address = address;
+
+    // Update location if coordinates provided
+    if (latitude !== undefined && longitude !== undefined) {
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        user.location = {
+          type: "Point",
+          coordinates: [lng, lat]
+        };
+      }
+    }
 
     await user.save();
 

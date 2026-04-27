@@ -17,7 +17,7 @@ function MapClickHandler({ onLocationSelect }) {
   return null;
 }
 
-function LocationPickerMap({ onLocationSelect }) {
+function LocationPickerMap({ onLocationSelect, initialPosition }) {
 
   const [position, setPosition] = useState(null);
   const [locationName, setLocationName] = useState("");
@@ -37,8 +37,17 @@ function LocationPickerMap({ onLocationSelect }) {
     }
   };
 
-  // Auto-detect on mount
+  // Auto-detect on mount, or use initialPosition
   useEffect(() => {
+    // If an initial position is provided (e.g. from saved profile), use it
+    if (initialPosition && initialPosition[0] && initialPosition[1]) {
+      setPosition(initialPosition);
+      setLoading(false);
+      reverseGeocode(initialPosition[0], initialPosition[1]);
+      if (onLocationSelect) onLocationSelect(initialPosition[0], initialPosition[1]);
+      return;
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
@@ -50,7 +59,6 @@ function LocationPickerMap({ onLocationSelect }) {
           if (onLocationSelect) onLocationSelect(lat, lng);
         },
         () => {
-          // Fallback to Bangalore
           setPosition([12.9716, 77.5946]);
           setLoading(false);
           if (onLocationSelect) onLocationSelect(12.9716, 77.5946);
