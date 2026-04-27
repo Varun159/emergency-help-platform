@@ -6,6 +6,8 @@ const authRoutes = require("./routes/authRoutes");
 const emergencyRoutes = require("./routes/emergencyRoutes");
 const helperRoutes = require("./routes/helperRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/emergency", emergencyRoutes);
 app.use("/api/helper", helperRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (req, res) => {
   const dbStatus = ["Disconnected", "Connected", "Connecting", "Disconnecting"];

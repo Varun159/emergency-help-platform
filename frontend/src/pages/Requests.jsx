@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import Toast from "../components/Toast";
 import API from "../api/axios";
 
 function Requests() {
@@ -11,12 +12,31 @@ function Requests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [toast, setToast] = useState(null);
+
+  // Review state
+  const [reviewModal, setReviewModal] = useState(null); // request obj
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [existingReviews, setExistingReviews] = useState({}); // { requestId: review }
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
         const res = await API.get("/emergency/my-requests");
         setRequests(res.data);
+
+        // Load existing reviews for resolved requests
+        const resolved = res.data.filter(r => r.status === "resolved" && r.accepted_by);
+        const reviewMap = {};
+        await Promise.all(resolved.map(async (r) => {
+          try {
+            const rv = await API.get(`/reviews/request/${r._id}`);
+            if (rv.data) reviewMap[r._id] = rv.data;
+          } catch {}
+        }));
+        setExistingReviews(reviewMap);
       } catch (err) {
         console.log(err);
       }
@@ -68,11 +88,57 @@ function Requests() {
     low: { color: "#fff", bg: "#10B981" },
   };
 
+  // Submit review
+  const handleSubmitReview = async () => {
+    if (!reviewRating) { setToast({ message: "Please select a rating", type: "error" }); return; }
+    setReviewSubmitting(true);
+    try {
+      const res = await API.post(`/reviews/${reviewModal._id}`, { rating: reviewRating, comment: reviewComment });
+      setExistingReviews(prev => ({ ...prev, [reviewModal._id]: res.data.review }));
+      setToast({ message: "Review submitted! Thank you ⭐", type: "accepted" });
+      setReviewModal(null); setReviewRating(0); setReviewComment("");
+    } catch (err) {
+      setToast({ message: err.response?.data?.message || "Failed to submit review", type: "error" });
+    }
+    setReviewSubmitting(false);
+  };
+
   // ── RENDER ──────────────────────────────
 
   return (
     <div style={styles.layout}>
       <Sidebar open={sidebarOpen} close={() => setSidebarOpen(false)} />
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* ═══ REVIEW MODAL ═══ */}
+      {reviewModal && (
+        <div style={styles.modalOverlay} onClick={() => setReviewModal(null)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#f8fafc" }}>Rate Your Helper</h3>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 18px" }}>
+              How was your experience with {reviewModal.accepted_by?.name || "the helper"}?
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 16 }}>
+              {[1,2,3,4,5].map(n => (
+                <span key={n} onClick={() => setReviewRating(n)}
+                  style={{ fontSize: 32, cursor: "pointer", color: n <= reviewRating ? "#F59E0B" : "#475569", transition: "all 0.15s" }}>
+                  ★
+                </span>
+              ))}
+            </div>
+            <textarea placeholder="Share your experience (optional)..."
+              value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+              style={styles.reviewTextarea} />
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <button style={styles.reviewSubmitBtn} onClick={handleSubmitReview} disabled={reviewSubmitting}>
+                {reviewSubmitting ? "Submitting..." : "Submit Review"}
+              </button>
+              <button style={styles.reviewCancelBtn} onClick={() => setReviewModal(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={styles.content}>
         <Navbar toggleSidebar={() => setSidebarOpen(true)} />
@@ -323,6 +389,27 @@ function Requests() {
                       </span>
                     )}
                   </div>
+
+                  {/* ── REVIEW SECTION ── */}
+                  {req.status === "resolved" && req.accepted_by && (
+                    existingReviews[req._id] ? (
+                      <div style={styles.reviewDisplay}>
+                        <span style={{ color: "#F59E0B", fontSize: 14 }}>
+                          {"★".repeat(existingReviews[req._id].rating)}{"☆".repeat(5 - existingReviews[req._id].rating)}
+                        </span>
+                        <span style={{ color: "#94a3b8", fontSize: 12, marginLeft: 8 }}>
+                          {existingReviews[req._id].comment || "Reviewed"}
+                        </span>
+                      </div>
+                    ) : (
+                      <button style={styles.reviewBtn}
+                        onClick={() => setReviewModal(req)}
+                        onMouseEnter={e => { e.target.style.background = "#F59E0B"; e.target.style.color = "#fff"; }}
+                        onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.color = "#F59E0B"; }}>
+                        ⭐ Leave Review
+                      </button>
+                    )
+                  )}
                 </div>
               );
             })}
@@ -668,6 +755,53 @@ const styles = {
     padding: "4px 10px",
     borderRadius: "8px",
     border: "1px solid rgba(255, 255, 255, 0.05)",
+  },
+
+  // ── REVIEW STYLES ───────────────────
+
+  modalOverlay: {
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center",
+    justifyContent: "center", zIndex: 2000,
+  },
+
+  modal: {
+    background: "#1e293b", borderRadius: 18, padding: "32px",
+    width: 420, maxWidth: "90vw",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    textAlign: "center",
+  },
+
+  reviewTextarea: {
+    width: "100%", padding: "12px 14px", borderRadius: 12,
+    border: "1.5px solid rgba(255,255,255,0.1)", minHeight: 80,
+    fontSize: 14, color: "#f8fafc", resize: "vertical", outline: "none",
+    background: "#262f45", fontFamily: "inherit", boxSizing: "border-box",
+  },
+
+  reviewSubmitBtn: {
+    flex: 1, padding: "10px", background: "linear-gradient(135deg,#F59E0B,#D97706)",
+    border: "none", borderRadius: 10, color: "#fff", fontWeight: 700,
+    fontSize: 14, cursor: "pointer", transition: "all 0.2s",
+  },
+
+  reviewCancelBtn: {
+    padding: "10px 20px", background: "transparent",
+    border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 10,
+    color: "#94a3b8", fontWeight: 600, fontSize: 14, cursor: "pointer",
+  },
+
+  reviewBtn: {
+    marginTop: 12, background: "transparent", color: "#F59E0B",
+    border: "1.5px solid #F59E0B", padding: "8px 20px", borderRadius: 10,
+    fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s",
+  },
+
+  reviewDisplay: {
+    marginTop: 12, padding: "8px 14px", background: "#262f45",
+    borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)",
+    display: "flex", alignItems: "center",
   },
 };
 

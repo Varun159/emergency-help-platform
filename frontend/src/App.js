@@ -7,6 +7,7 @@ import HelperDashboard from "./pages/HelperDashboard";
 import CreateEmergency from "./pages/CreateEmergency";
 import Requests from "./pages/Requests";
 import Profile from "./pages/Profile";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
 return (
@@ -28,6 +29,8 @@ return (
 <Route path="/requests" element={<Requests />} />
 
 <Route path="/profile" element={<Profile />} />
+
+<Route path="/admin" element={<AdminDashboard />} />
 
 </Routes>
 

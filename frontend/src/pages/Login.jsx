@@ -38,7 +38,9 @@ localStorage.setItem("token",res.data.token);
 
 const role = res.data.user.role;
 
-if(role === "helper"){
+if(role === "admin"){
+navigate("/admin");
+}else if(role === "helper"){
 navigate("/helper");
 }else{
 navigate("/requester");

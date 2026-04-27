@@ -441,6 +441,21 @@ function HelperDashboard() {
                       Accept Request
                     </button>
                   </div>
+
+                  {/* Mini Map */}
+                  {e.location?.coordinates && (
+                    <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", height: 150, border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <MapContainer
+                        center={[e.location.coordinates[1], e.location.coordinates[0]]}
+                        zoom={14} zoomControl={false} dragging={false}
+                        scrollWheelZoom={false} doubleClickZoom={false}
+                        style={{ height: "100%", width: "100%" }}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" />
+                        <Marker position={[e.location.coordinates[1], e.location.coordinates[0]]} icon={emergencyIcon} />
+                        {helperLoc && <Marker position={[helperLoc.lat, helperLoc.lng]} icon={helperIcon}><Popup>You</Popup></Marker>}
+                      </MapContainer>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -538,6 +553,21 @@ function HelperDashboard() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Mini Map */}
+                  {e.location?.coordinates && (
+                    <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", height: 150, border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <MapContainer
+                        center={[e.location.coordinates[1], e.location.coordinates[0]]}
+                        zoom={14} zoomControl={false} dragging={false}
+                        scrollWheelZoom={false} doubleClickZoom={false}
+                        style={{ height: "100%", width: "100%" }}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" />
+                        <Marker position={[e.location.coordinates[1], e.location.coordinates[0]]} icon={emergencyIcon} />
+                        {helperLoc && <Marker position={[helperLoc.lat, helperLoc.lng]} icon={helperIcon}><Popup>You</Popup></Marker>}
+                      </MapContainer>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Toast from "../components/Toast";
 import API from "../api/axios";
-import LocationPreviewMap from "../components/LocationPreviewMap";
+import LocationPickerMap from "../components/LocationPickerMap";
 
 function CreateEmergency() {
 
@@ -15,6 +15,8 @@ function CreateEmergency() {
   const [urgency, setUrgency] = useState("medium");
   const [toast, setToast] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedLat, setSelectedLat] = useState(null);
+  const [selectedLng, setSelectedLng] = useState(null);
 
   // ── CATEGORIES ──────────────────────────
 
@@ -51,28 +53,27 @@ function CreateEmergency() {
 
     setSubmitting(true);
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          await API.post("/emergency/create", {
-            category,
-            description,
-            urgency_level: urgency,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          setToast({ message: "Emergency request created!", type: "accepted" });
-          setTimeout(() => navigate("/requests"), 1200);
-        } catch {
-          setToast({ message: "Failed to create request", type: "error" });
-          setSubmitting(false);
-        }
-      },
-      () => {
-        setToast({ message: "Location access denied. Please enable GPS.", type: "error" });
-        setSubmitting(false);
-      }
-    );
+    // Use the map-selected location
+    if (!selectedLat || !selectedLng) {
+      setToast({ message: "Please wait for location detection or pick a location on the map", type: "error" });
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      await API.post("/emergency/create", {
+        category,
+        description,
+        urgency_level: urgency,
+        latitude: selectedLat,
+        longitude: selectedLng,
+      });
+      setToast({ message: "Emergency request created!", type: "accepted" });
+      setTimeout(() => navigate("/requests"), 1200);
+    } catch {
+      setToast({ message: "Failed to create request", type: "error" });
+      setSubmitting(false);
+    }
   };
 
   // ── RENDER ──────────────────────────────
@@ -225,14 +226,19 @@ function CreateEmergency() {
               <div style={styles.section}>
                 <div style={styles.stepBadge}>
                   <span style={styles.stepNumber}>4</span>
-                  <span style={styles.stepLabel}>Your Location</span>
+                  <span style={styles.stepLabel}>Emergency Location</span>
                 </div>
 
                 <div style={styles.mapWrapper}>
-                  <LocationPreviewMap />
+                  <LocationPickerMap
+                    onLocationSelect={(lat, lng) => {
+                      setSelectedLat(lat);
+                      setSelectedLng(lng);
+                    }}
+                  />
                 </div>
                 <p style={styles.locationHint}>
-                  📍 Your current GPS location will be shared with helpers
+                  📍 Click on the map or drag the pin to set the emergency location
                 </p>
               </div>
 
